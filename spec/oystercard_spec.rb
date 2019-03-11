@@ -20,9 +20,10 @@ describe Oystercard do
             expect(subject.balance).to eq Oystercard::BALANCE_LIMIT
         end
 
-        it 'deducts money from card' do 
-            expect { subject.deduct 10 }.to change{ subject.balance }.by -10
-        end 
+        # private method so commented this test out
+        # it 'deducts money from card' do 
+        #     expect { subject.deduct 10 }.to change{ subject.balance }.by -10
+        # end 
 
         it 'raises an error when over balance limit' do 
             expect{subject.top_up(1)}.to raise_error "cannot top up balance over $#{Oystercard::BALANCE_LIMIT}"
