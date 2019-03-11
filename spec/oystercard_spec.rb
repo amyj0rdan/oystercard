@@ -64,7 +64,6 @@ describe Oystercard do
             expect(subject.entry_station).to eq nil
         end 
 
-
         it 'reduces the balance by the minimum fare' do
             expect { subject.touch_out}. to change { subject.balance }.by -Oystercard::MINIMUM_FARE
         end
