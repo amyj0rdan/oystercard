@@ -38,7 +38,7 @@ describe Oystercard do
 
     end
 
-    context 'card has been touched in' do
+    context 'card has been touched in and balance greater than minimum' do
 
         before(:each) do
             subject.top_up(Oystercard::BALANCE_LIMIT)
@@ -54,6 +54,10 @@ describe Oystercard do
             expect(subject).not_to be_in_journey
         end
 
+        it 'reduces the balance by the minimum fare' do
+            expect { subject.touch_out}. to change { subject.balance }.by -Oystercard::MINIMUM_FARE
+        end
+
     end
 
     context 'card below minimum balance' do 
@@ -61,8 +65,7 @@ describe Oystercard do
         it 'raises error when trying to touch in' do
         expect{subject.touch_in}.to raise_error 'insufficient funds'
         end 
+
     end 
-
-
 
 end 
