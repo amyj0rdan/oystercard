@@ -59,6 +59,12 @@ describe Oystercard do
             expect(subject).not_to be_in_journey
         end
 
+        it 'forgets the entry station on touching out' do 
+            subject.touch_out
+            expect(subject.entry_station).to eq nil
+        end 
+
+
         it 'reduces the balance by the minimum fare' do
             expect { subject.touch_out}. to change { subject.balance }.by -Oystercard::MINIMUM_FARE
         end
