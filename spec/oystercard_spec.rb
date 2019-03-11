@@ -38,22 +38,20 @@ describe Oystercard do
 
     end
 
-    describe '#touch_in' do
-    
-        it 'is in journey after touching in' do
+    context 'card has been touched in' do
+
+        before(:each) do
             subject.touch_in
+        end 
+        
+        it 'is in journey after touched in' do
             expect(subject).to be_in_journey
         end
 
-    end
-
-    describe '#touch_out' do
-
         it 'is not in journey after touching out' do
-            subject.touch_in
             subject.touch_out
             expect(subject).not_to be_in_journey
         end
-    end
 
+    end
 end 
