@@ -10,27 +10,50 @@ describe Oystercard do
 
     end
 
-    describe '#top_up' do
+    context 'card has been topped up' do
 
-        it 'adds money to the card' do
-            subject.top_up(10)
-            expect(subject.balance).to eq 10
+        before(:each) do
+            subject.top_up(Oystercard::BALANCE_LIMIT)
         end
 
-        it 'raises an error when over balance limit' do 
-            expect{subject.top_up(100)}.to raise_error "cannot top up balance over $#{Oystercard::BALANCE_LIMIT}"
-        end 
-    end
-
-    describe '#deduct' do 
+        it 'adds money to the card' do
+            expect(subject.balance).to eq Oystercard::BALANCE_LIMIT
+        end
 
         it 'deducts money from card' do 
-            subject.top_up(20)
-            subject.deduct(10)
-            expect(subject.balance).to eq 10
+            expect { subject.deduct 10 }.to change{ subject.balance }.by -10
         end 
-    end 
 
+        it 'raises an error when over balance limit' do 
+            expect{subject.top_up(1)}.to raise_error "cannot top up balance over $#{Oystercard::BALANCE_LIMIT}"
+        end 
 
+    end
+
+    describe '#in_journey?' do
+
+        it 'is not in_journey for a new card' do
+            expect(subject).not_to be_in_journey
+        end
+
+    end
+
+    describe '#touch_in' do
+    
+        it 'is in journey after touching in' do
+            subject.touch_in
+            expect(subject).to be_in_journey
+        end
+
+    end
+
+    describe '#touch_out' do
+
+        it 'is not in journey after touching out' do
+            subject.touch_in
+            subject.touch_out
+            expect(subject).not_to be_in_journey
+        end
+    end
 
 end 
