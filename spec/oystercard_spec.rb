@@ -41,6 +41,7 @@ describe Oystercard do
     context 'card has been touched in' do
 
         before(:each) do
+            subject.top_up(Oystercard::BALANCE_LIMIT)
             subject.touch_in
         end 
         
@@ -54,4 +55,14 @@ describe Oystercard do
         end
 
     end
+
+    context 'card below minimum balance' do 
+
+        it 'raises error when trying to touch in' do
+        expect{subject.touch_in}.to raise_error 'insufficient funds'
+        end 
+    end 
+
+
+
 end 
