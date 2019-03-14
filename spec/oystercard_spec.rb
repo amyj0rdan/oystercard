@@ -54,11 +54,17 @@ describe Oystercard do
         expect { subject.touch_in(station) }.to raise_error 'Insufficient funds'
       end
 
-      # it 'should store entry station' do
-      #   subject.top_up(Oystercard::MAXIMUM_BALANCE)
-      #   subject.touch_in(station)
-      #   expect(subject.entry_station).to eq station
-      # end
+      it 'should store entry station' do
+        subject.top_up(Oystercard::MAXIMUM_BALANCE)
+        subject.touch_in(station)
+        expect(subject.journeys[-1][:entry]).to eq station
+      end
+
+      it 'should create a new journey with no exit station' do
+        subject.top_up(Oystercard::MAXIMUM_BALANCE)
+        subject.touch_in(station)
+        expect(subject.journeys[-1][:exit]).to eq nil
+      end
 
     end
 
@@ -78,15 +84,15 @@ describe Oystercard do
         expect { subject.touch_out(station2) }.to change{subject.balance}.by(-Oystercard::MINIMUM_FARE)
       end
 
-      it 'should not have an entry station after touched out' do
-        subject.touch_out(station2)
-        expect(subject.entry_station).to eq nil
-      end
-
-      # it 'should store exit station' do
+      # it 'should not have an entry station after touched out' do
       #   subject.touch_out(station2)
-      #   expect(subject.exit_station).to eq station2
+      #   expect(subject.entry_station).to eq nil
       # end
+
+      it 'should store exit station' do
+        subject.touch_out(station2)
+        expect(subject.journeys[-1][:exit]).to eq station2
+      end
 
     end
 
