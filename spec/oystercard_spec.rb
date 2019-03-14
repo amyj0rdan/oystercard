@@ -2,11 +2,15 @@ require 'oystercard'
 
 describe Oystercard do
 
+  subject { described_class.new(journey_class) }
+
   let(:station) { double :station }
   let(:station2) { double :station }
+  let(:journey) { double :journey }
+  let(:journey_class) { double :journey_class }
 
   describe '#initialize' do
-
+    
     it 'has a balance of 0' do
       expect(subject.balance).to eq 0
     end
@@ -41,6 +45,8 @@ describe Oystercard do
 
     it 'should be in journey when touched in' do
       subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      allow(journey_class).to receive(:new).with(station).and_return journey
+      allow(journey).to receive(:complete?).and_return false
       subject.touch_in(station)
       expect(subject).to be_in_journey
     end
@@ -54,16 +60,23 @@ describe Oystercard do
       expect { subject.touch_in(station) }.to raise_error 'Insufficient funds'
     end
 
-    it 'should store entry station' do
+    it 'create a new journey' do
       subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      expect(journey_class).to receive(:new).with(station).and_return journey
       subject.touch_in(station)
-      expect(subject.journeys[-1][:entry]).to eq station
+    end
+
+    it 'stores the journey' do
+      subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      allow(journey_class).to receive(:new).with(station).and_return journey
+      subject.touch_in(station)
+      expect(subject.journeys).to include journey
     end
 
     it 'should create a new journey with no exit station' do
       subject.top_up(Oystercard::MAXIMUM_BALANCE)
       subject.touch_in(station)
-      expect(subject.journeys[-1][:exit]).to eq nil
+      expect(subject.journeys[-1].exit_station).to eq nil
     end
 
   end
@@ -91,35 +104,22 @@ describe Oystercard do
 
     it 'should store exit station' do
       subject.touch_out(station2)
-      expect(subject.journeys[-1][:exit]).to eq station2
+      expect(subject.journeys[-1].exit_station).to eq station2
     end
 
     context 'touching out twice' do
       it 'logs the exit station' do
         subject.touch_out(station)
         subject.touch_out(station2)
-        expect(subject.journeys[-1][:exit]).to eq station2
+        expect(subject.journeys[-1].exit_station).to eq station2
       end
       it 'last journey has no entry station' do
         subject.touch_out(station)
         subject.touch_out(station2)
-        expect(subject.journeys[-1][:entry]).to be_nil
+        expect(subject.journeys[-1].entry_station).to be_nil
       end
     end
 
-  end
-
-  describe '#store_journey' do
-
-    before(:each) do
-      subject.top_up(Oystercard::MAXIMUM_BALANCE)
-      subject.touch_in(station)
-    end
-
-    it 'stores the entry and exit station when touching out' do
-      subject.touch_out(station2)
-      expect(subject.journeys).to eq [{ entry: station, exit: station2 }]
-    end
   end
 
 end
