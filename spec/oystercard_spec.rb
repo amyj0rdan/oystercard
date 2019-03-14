@@ -94,6 +94,19 @@ describe Oystercard do
         expect(subject.journeys[-1][:exit]).to eq station2
       end
 
+      context 'touching out twice' do
+        it 'logs the exit station' do
+          subject.touch_out(station)
+          subject.touch_out(station2)
+          expect(subject.journeys[-1][:exit]).to eq station2
+        end
+        it 'last journey has no entry station' do
+          subject.touch_out(station)
+          subject.touch_out(station2)
+          expect(subject.journeys[-1][:entry]).to be_nil
+        end
+      end
+
     end
 
     describe '#store_journey' do
