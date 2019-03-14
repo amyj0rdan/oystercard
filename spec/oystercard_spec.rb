@@ -73,11 +73,6 @@ describe Oystercard do
       expect(subject.journeys).to include journey
     end
 
-    it 'should create a new journey with no exit station' do
-      subject.top_up(Oystercard::MAXIMUM_BALANCE)
-      subject.touch_in(station)
-      expect(subject.journeys[-1].exit_station).to eq nil
-    end
 
   end
 
@@ -85,41 +80,61 @@ describe Oystercard do
 
     before(:each) do
       subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      allow(journey_class).to receive(:new).with(station).and_return journey
       subject.touch_in(station)
     end
-
-    it 'should not be in journey after touched out' do
-      subject.touch_out(station2)
-      expect(subject).not_to be_in_journey
+    
+    context 'the user has never touched in' do
+      # ?!
     end
 
-    it 'should reduce balance by minimum fare' do
-      expect { subject.touch_out(station2) }.to change { subject.balance }.by(-Oystercard::MINIMUM_FARE)
-    end
-
-    # it 'should not have an entry station after touched out' do
-    #   subject.touch_out(station2)
-    #   expect(subject.entry_station).to eq nil
-    # end
-
-    it 'should store exit station' do
-      subject.touch_out(station2)
-      expect(subject.journeys[-1].exit_station).to eq station2
-    end
-
-    context 'touching out twice' do
-      it 'logs the exit station' do
-        subject.touch_out(station)
-        subject.touch_out(station2)
-        expect(subject.journeys[-1].exit_station).to eq station2
+    context "user has touched in" do
+      before :each do
+        allow(journey).to receive(:complete?).and_return false
       end
-      it 'last journey has no entry station' do
-        subject.touch_out(station)
+
+      it 'finishes the journey' do
+        expect(journey).to receive(:finish).with(station2)
         subject.touch_out(station2)
-        expect(subject.journeys[-1].entry_station).to be_nil
       end
+  
+      it 'should reduce balance by minimum fare' do
+        allow(journey).to receive(:finish)
+        expect { subject.touch_out(station2) }.to change { subject.balance }.by(-Oystercard::MINIMUM_FARE)
+      end  
     end
 
+    context "user has touched in and touched out" do
+      before(:each) do
+        allow(journey).to receive(complete?).and_return true
+        subject.touch_out(station)
+      end
+
+      it 'creates a new journey' do
+        allow(journey).to receive(complete?).and_return true
+        subject.touch_out(station)
+        expect(journey_class).to receive(:new)
+      end
+
+      it 'creates a new journey and finishes it' do
+      end
+
+      it 'stores the journey' do
+
+      end
+
+      # it 'logs the exit station' do
+      #   subject.touch_out(station)
+      #   subject.touch_out(station2)
+      #   expect(subject.journeys[-1].exit_station).to eq station2
+      # end
+      
+      # it 'last journey has no entry station' do
+      #   subject.touch_out(station)
+      #   subject.touch_out(station2)
+      #   expect(subject.journeys[-1].entry_station).to be_nil
+      # end
+    end
   end
 
 end
