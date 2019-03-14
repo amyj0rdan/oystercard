@@ -1,7 +1,7 @@
 require 'station'
 
 describe Station do
-  describe '#new'do
+  describe '#new' do
     it "records the station name" do
       station = described_class.new("victoria", 1)
       expect(station.name).to eq "victoria"
@@ -13,4 +13,3 @@ describe Station do
     end
   end
 end
-
