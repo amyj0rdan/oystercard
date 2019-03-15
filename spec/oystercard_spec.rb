@@ -73,7 +73,6 @@ describe Oystercard do
       expect(subject.journeys).to include journey
     end
 
-
   end
 
   describe '#touch_out' do

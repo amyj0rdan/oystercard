@@ -25,7 +25,6 @@ class Oystercard
   def touch_out(station)
     deduct(MINIMUM_FARE)
     @journeys << @journey_class.new if @journeys.empty? || @journeys[-1].complete?
-
     @journeys[-1].finish(station)
   end
 
