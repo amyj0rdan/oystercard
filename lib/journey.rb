@@ -18,10 +18,6 @@ class Journey
   end
 
   def calculate_fare
-    if @entry_station
-      MINIMUM_FARE
-    else
-      PENALTY_FARE
-    end
+    @entry_station ? MINIMUM_FARE : PENALTY_FARE
   end
 end
