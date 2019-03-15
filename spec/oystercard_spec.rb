@@ -10,7 +10,7 @@ describe Oystercard do
   let(:journey_class) { double :journey_class }
 
   describe '#initialize' do
-    
+
     it 'has a balance of 0' do
       expect(subject.balance).to eq 0
     end
@@ -43,6 +43,16 @@ describe Oystercard do
 
   describe '#touch_in' do
 
+    it 'charges penalty fare when touched in when still in journey' do
+      subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      allow(journey_class).to receive(:new).with(station).and_return journey
+      allow(journey).to receive(:complete?).and_return false
+      allow(journey).to receive(:calculate_fare)
+      subject.touch_in(station)
+      allow(journey).to receive(:calculate_fare).and_return 6
+      expect { subject.touch_in(station) }.to change { subject.balance }.by(-6)
+
+    end
     it 'should be in journey when touched in' do
       subject.top_up(Oystercard::MAXIMUM_BALANCE)
       allow(journey_class).to receive(:new).with(station).and_return journey
@@ -82,8 +92,9 @@ describe Oystercard do
       allow(journey_class).to receive(:new).with(station).and_return journey
       allow(journey_class).to receive(:new).with(no_args).and_return journey
       allow(journey).to receive(:finish).with(station).and_return journey
+      allow(journey).to receive(:calculate_fare).and_return 1
     end
-    
+
     context 'the user has never touched in' do
       it 'creates a new journey' do
         expect(journey_class).to receive(:new).with(no_args)
@@ -105,35 +116,41 @@ describe Oystercard do
         expect(journey).to receive(:finish).with(station2)
         subject.touch_out(station2)
       end
-  
+
       it 'should reduce balance by minimum fare' do
         allow(journey).to receive(:finish)
         expect { subject.touch_out(station2) }.to change { subject.balance }.by(-Oystercard::MINIMUM_FARE)
-      end  
+      end
 
       context "... and touched out" do
         before(:each) do
           allow(journey).to receive(:complete?).and_return true
           allow(journey).to receive(:finish).with(station).and_return journey
+          allow(journey).to receive(:calculate_fare).and_return 6
           subject.touch_out(station)
         end
-  
+
         it 'creates a new journey' do
           expect(journey_class).to receive(:new).with(no_args)
           subject.touch_out(station)
         end
-  
+
         it '... and finishes it' do
           expect(journey).to receive(:finish).with(station)
           subject.touch_out(station)
         end
-  
+
         it '... and stores the journey' do
           subject.touch_out(station)
           expect(subject.journeys[-1]).to eq journey
         end
+
+        it '... and charges the penalty fare' do
+          allow(journey).to receive(:calculate_fare).and_return 6
+          expect { subject.touch_out(station) }.to change { subject.balance }.by(-6)
+        end
       end
-  
+
     end
 
   end
