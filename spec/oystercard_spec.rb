@@ -81,16 +81,25 @@ describe Oystercard do
     before(:each) do
       subject.top_up(Oystercard::MAXIMUM_BALANCE)
       allow(journey_class).to receive(:new).with(station).and_return journey
-      subject.touch_in(station)
+      allow(journey_class).to receive(:new).with(no_args).and_return journey
+      allow(journey).to receive(:finish).with(station).and_return journey
     end
     
     context 'the user has never touched in' do
-      # ?!
+      it 'creates a new journey' do
+        expect(journey_class).to receive(:new).with(no_args)
+        subject.touch_out(station)
+      end
+      it 'and stores it' do
+        subject.touch_out(station)
+        expect(subject.journeys[-1]).to eq journey
+      end
     end
 
     context "user has touched in" do
       before :each do
         allow(journey).to receive(:complete?).and_return false
+        subject.touch_in(station)
       end
 
       it 'finishes the journey' do
@@ -102,39 +111,32 @@ describe Oystercard do
         allow(journey).to receive(:finish)
         expect { subject.touch_out(station2) }.to change { subject.balance }.by(-Oystercard::MINIMUM_FARE)
       end  
+
+      context "... and touched out" do
+        before(:each) do
+          allow(journey).to receive(:complete?).and_return true
+          allow(journey).to receive(:finish).with(station).and_return journey
+          subject.touch_out(station)
+        end
+  
+        it 'creates a new journey' do
+          expect(journey_class).to receive(:new).with(no_args)
+          subject.touch_out(station)
+        end
+  
+        it '... and finishes it' do
+          expect(journey).to receive(:finish).with(station)
+          subject.touch_out(station)
+        end
+  
+        it '... and stores the journey' do
+          subject.touch_out(station)
+          expect(subject.journeys[-1]).to eq journey
+        end
+      end
+  
     end
 
-    context "user has touched in and touched out" do
-      before(:each) do
-        allow(journey).to receive(complete?).and_return true
-        subject.touch_out(station)
-      end
-
-      it 'creates a new journey' do
-        allow(journey).to receive(complete?).and_return true
-        subject.touch_out(station)
-        expect(journey_class).to receive(:new)
-      end
-
-      it 'creates a new journey and finishes it' do
-      end
-
-      it 'stores the journey' do
-
-      end
-
-      # it 'logs the exit station' do
-      #   subject.touch_out(station)
-      #   subject.touch_out(station2)
-      #   expect(subject.journeys[-1].exit_station).to eq station2
-      # end
-      
-      # it 'last journey has no entry station' do
-      #   subject.touch_out(station)
-      #   subject.touch_out(station2)
-      #   expect(subject.journeys[-1].entry_station).to be_nil
-      # end
-    end
   end
 
 end

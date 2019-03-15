@@ -5,14 +5,22 @@ describe Journey do
   let(:station2) { double :Station }
 
   describe '#new' do
-    it 'checks for the station' do
-      journey = described_class.new(station)
-      expect(journey.entry_station).to eq station
-    end
-
     it 'has an incomplete journey' do
       journey = described_class.new(station)
       expect(journey).not_to be_complete
+    end
+
+    context 'passed a station argument' do
+      it 'checks for the station' do
+        journey = described_class.new(station)
+        expect(journey.entry_station).to eq station
+      end  
+    end
+
+    context 'not passed a station argument' do
+      it "doesn't have an entry station" do
+        # stuff in here
+      end
     end
   end
 
